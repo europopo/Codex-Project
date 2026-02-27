@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>炫酷动画计算器</title>
+    <style>
+      :root {
+        --bg-1: #0f1020;
+        --bg-2: #201437;
+        --accent: #7a5cff;
+        --accent-2: #17c9ff;
+        --text: #eef1ff;
+        --panel: rgba(255, 255, 255, 0.08);
+        --panel-border: rgba(255, 255, 255, 0.2);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: "Inter", "PingFang SC", "Microsoft YaHei", sans-serif;
+        color: var(--text);
+        overflow: hidden;
+        background: radial-gradient(circle at 10% 20%, #2d2459, transparent 30%),
+          radial-gradient(circle at 90% 10%, #103a5c, transparent 35%),
+          linear-gradient(120deg, var(--bg-1), var(--bg-2));
+      }
+
+      .aurora {
+        position: fixed;
+        inset: -30vmax;
+        pointer-events: none;
+        background: conic-gradient(
+          from 0deg,
+          rgba(122, 92, 255, 0.18),
+          rgba(23, 201, 255, 0.12),
+          rgba(100, 255, 183, 0.08),
+          rgba(122, 92, 255, 0.18)
+        );
+        filter: blur(60px);
+        animation: spin 22s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .calculator {
+        width: min(92vw, 380px);
+        padding: 1rem;
+        border-radius: 24px;
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), 0 0 40px rgba(122, 92, 255, 0.18);
+        animation: float 4s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
+      .display {
+        position: relative;
+        min-height: 112px;
+        border-radius: 18px;
+        background: rgba(4, 8, 24, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        overflow: hidden;
+      }
+
+      .display::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent 20%, rgba(255, 255, 255, 0.15), transparent 80%);
+        transform: translateX(-110%);
+        animation: sweep 4.2s ease-in-out infinite;
+      }
+
+      @keyframes sweep {
+        0%,
+        70% {
+          transform: translateX(-120%);
+        }
+        100% {
+          transform: translateX(120%);
+        }
+      }
+
+      .history {
+        min-height: 1.2rem;
+        font-size: 0.95rem;
+        opacity: 0.7;
+        text-align: right;
+      }
+
+      .current {
+        font-size: clamp(2rem, 5vw, 2.7rem);
+        text-align: right;
+        font-weight: 700;
+        line-height: 1.2;
+        word-break: break-all;
+      }
+
+      .keys {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.7rem;
+      }
+
+      button {
+        border: none;
+        border-radius: 14px;
+        padding: 0.95rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        position: relative;
+        transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+      }
+
+      button:active,
+      button.active {
+        transform: scale(0.97);
+      }
+
+      .operator {
+        background: linear-gradient(135deg, rgba(122, 92, 255, 0.6), rgba(23, 201, 255, 0.6));
+      }
+
+      .equals {
+        grid-column: span 2;
+        background: linear-gradient(135deg, #0ff0b3, #10b8ff);
+        color: #041223;
+      }
+
+      .clear,
+      .delete {
+        background: rgba(255, 120, 140, 0.35);
+      }
+
+      .zero {
+        grid-column: span 2;
+      }
+
+      .hint {
+        margin-top: 0.8rem;
+        font-size: 0.82rem;
+        opacity: 0.7;
+        text-align: center;
+      }
+
+      @media (max-width: 420px) {
+        .calculator {
+          border-radius: 18px;
+          padding: 0.8rem;
+        }
+
+        button {
+          border-radius: 12px;
+          padding: 0.86rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="aurora" aria-hidden="true"></div>
+
+    <main class="calculator" role="application" aria-label="计算器">
+      <section class="display" aria-live="polite">
+        <div class="history" id="history"></div>
+        <div class="current" id="current">0</div>
+      </section>
+
+      <section class="keys">
+        <button class="clear" data-action="clear">AC</button>
+        <button class="delete" data-action="delete">⌫</button>
+        <button class="operator" data-action="percent">%</button>
+        <button class="operator" data-action="operator">÷</button>
+
+        <button data-action="number">7</button>
+        <button data-action="number">8</button>
+        <button data-action="number">9</button>
+        <button class="operator" data-action="operator">×</button>
+
+        <button data-action="number">4</button>
+        <button data-action="number">5</button>
+        <button data-action="number">6</button>
+        <button class="operator" data-action="operator">−</button>
+
+        <button data-action="number">1</button>
+        <button data-action="number">2</button>
+        <button data-action="number">3</button>
+        <button class="operator" data-action="operator">+</button>
+
+        <button class="zero" data-action="number">0</button>
+        <button data-action="decimal">.</button>
+        <button class="equals" data-action="equals">=</button>
+      </section>
+
+      <p class="hint">支持键盘输入：0-9、+ - * /、Enter、Backspace</p>
+    </main>
+
+    <script>
+      const currentEl = document.getElementById("current");
+      const historyEl = document.getElementById("history");
+      const keys = document.querySelector(".keys");
+
+      const state = {
+        current: "0",
+        previous: "",
+        operator: "",
+        justEvaluated: false,
+      };
+
+      function formatNumber(value) {
+        if (value === "") return "";
+        const [intPart, decPart] = value.split(".");
+        const formattedInt = Number(intPart).toLocaleString("en-US");
+        return decPart !== undefined ? `${formattedInt}.${decPart}` : formattedInt;
+      }
+
+      function updateDisplay() {
+        currentEl.textContent = formatNumber(state.current);
+        historyEl.textContent = state.previous && state.operator ? `${formatNumber(state.previous)} ${state.operator}` : "";
+      }
+
+      function inputNumber(n) {
+        if (state.justEvaluated) {
+          state.current = n;
+          state.justEvaluated = false;
+          updateDisplay();
+          return;
+        }
+
+        if (state.current === "0") {
+          state.current = n;
+        } else {
+          state.current += n;
+        }
+        updateDisplay();
+      }
+
+      function inputDecimal() {
+        if (state.justEvaluated) {
+          state.current = "0.";
+          state.justEvaluated = false;
+          updateDisplay();
+          return;
+        }
+
+        if (!state.current.includes(".")) {
+          state.current += ".";
+          updateDisplay();
+        }
+      }
+
+      function clearAll() {
+        state.current = "0";
+        state.previous = "";
+        state.operator = "";
+        state.justEvaluated = false;
+        updateDisplay();
+      }
+
+      function deleteOne() {
+        if (state.justEvaluated) return;
+        state.current = state.current.length > 1 ? state.current.slice(0, -1) : "0";
+        updateDisplay();
+      }
+
+      function chooseOperator(nextOperator) {
+        if (state.operator && !state.justEvaluated) {
+          evaluate();
+        }
+        state.previous = state.current;
+        state.operator = nextOperator;
+        state.current = "0";
+        state.justEvaluated = false;
+        updateDisplay();
+      }
+
+      function evaluate() {
+        if (!state.operator || !state.previous) return;
+        const a = Number(state.previous);
+        const b = Number(state.current);
+        let result = 0;
+
+        switch (state.operator) {
+          case "+":
+            result = a + b;
+            break;
+          case "−":
+            result = a - b;
+            break;
+          case "×":
+            result = a * b;
+            break;
+          case "÷":
+            result = b === 0 ? NaN : a / b;
+            break;
+          default:
+            return;
+        }
+
+        state.current = Number.isFinite(result) ? String(parseFloat(result.toFixed(10))) : "Error";
+        state.previous = "";
+        state.operator = "";
+        state.justEvaluated = true;
+        updateDisplay();
+      }
+
+      function handlePercent() {
+        state.current = String(parseFloat((Number(state.current) / 100).toFixed(10)));
+        updateDisplay();
+      }
+
+      function pressAnimation(button) {
+        button.classList.add("active");
+        setTimeout(() => button.classList.remove("active"), 110);
+      }
+
+      keys.addEventListener("click", (event) => {
+        const button = event.target.closest("button");
+        if (!button) return;
+        const { action } = button.dataset;
+        const value = button.textContent.trim();
+
+        pressAnimation(button);
+
+        if (action === "number") inputNumber(value);
+        if (action === "decimal") inputDecimal();
+        if (action === "clear") clearAll();
+        if (action === "delete") deleteOne();
+        if (action === "operator") chooseOperator(value);
+        if (action === "equals") evaluate();
+        if (action === "percent") handlePercent();
+      });
+
+      window.addEventListener("keydown", (event) => {
+        const keyMap = {
+          "/": "÷",
+          "*": "×",
+          "-": "−",
+          "+": "+",
+        };
+
+        if (/^[0-9]$/.test(event.key)) {
+          inputNumber(event.key);
+          return;
+        }
+
+        if (event.key === ".") {
+          inputDecimal();
+          return;
+        }
+
+        if (event.key in keyMap) {
+          chooseOperator(keyMap[event.key]);
+          return;
+        }
+
+        if (event.key === "Enter" || event.key === "=") {
+          evaluate();
+          return;
+        }
+
+        if (event.key === "Backspace") {
+          deleteOne();
+          return;
+        }
+
+        if (event.key.toLowerCase() === "c") {
+          clearAll();
+        }
+      });
+
+      updateDisplay();
+    </script>
+  </body>
+</html>
