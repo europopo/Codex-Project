@@ -24,12 +24,13 @@ python3 -m http.server 8080
 ### 方式一：自动部署（推荐）
 
 1. 将代码推送到 `main` 分支。
-2. 在 GitHub 仓库 Settings -> Pages 中，确认 Source 使用 **GitHub Actions**。
-3. 每次 push 到 `main` 后会自动部署。
+2. 在 GitHub 仓库 Settings -> Pages 中，将 Source 设置为 **Deploy from a branch**。
+3. Branch 选择 `gh-pages`（`/root`）。
+4. 每次 push 到 `main` 后会自动部署到 `gh-pages` 分支。
 
 ### 方式二：手动触发
 
-在 GitHub 的 Actions 页面，手动运行 `Deploy static site to GitHub Pages`。
+在 GitHub 的 Actions 页面，手动运行 `Deploy static site to gh-pages`。
 
 ---
 
