@@ -1,133 +1,84 @@
 <template>
-  <v-container fluid class="py-4 game-table">
-    <v-row>
-      <v-col cols="12" md="3">
-        <div class="d-flex flex-column ga-2">
-          <PlayerInfo
-            v-for="(player, index) in game.players"
-            :key="player.id"
-            :player="player"
-            :is-active="index === game.currentPlayerIndex"
-          />
-        </div>
-      </v-col>
+  <v-container fluid class="pa-4 table-root">
+    <JokerSlots :jokers="run.jokers" />
 
-      <v-col cols="12" md="9">
-        <PlayArea :last-play="game.lastPlayedHand" class="mb-4" />
-        <ActionPanel
-          :can-play="Boolean(game.canHumanPlay)"
-          class="mb-3"
-          @play="onPlay"
-          @pass="onPass"
-          @hint="onHint"
-          @restart="onRestart"
-        />
+    <ScoreHud
+      :ante="run.ante"
+      :blind-name="currentBlind.name"
+      :blind-type="currentBlind.type"
+      :blind-score="run.blindScore"
+      :target="target"
+      :score="run.score"
+      :money="run.money"
+      :hands="run.handsRemaining"
+      :discards="run.discardsRemaining"
+    />
 
-        <v-alert density="compact" class="mb-3" border="start" variant="tonal">
-          {{ game.statusMessage }}
-        </v-alert>
+    <div class="my-4 d-flex ga-2 flex-wrap">
+      <v-btn color="teal" @click="sort('rank')">按点数排序</v-btn>
+      <v-btn color="teal-darken-1" @click="sort('suit')">按花色排序</v-btn>
+      <v-btn color="orange" :disabled="!canDiscard" @click="discard">弃牌</v-btn>
+      <v-btn color="pink" :disabled="!canPlay" @click="play">出牌（1~5张）</v-btn>
+      <v-btn color="red" variant="outlined" @click="reset">重开</v-btn>
+    </div>
 
-        <v-card class="pa-3" variant="tonal">
-          <div class="text-subtitle-1 mb-2">你的手牌</div>
-          <div class="hand-scroll">
-            <div class="hand-row">
-              <TransitionGroup name="hand-pop" tag="div" class="hand-row">
-                <PlayingCard
-                  v-for="card in humanCards"
-                  :key="card.id"
-                  :card="card"
-                  :selected="selectedIds.has(card.id)"
-                  :clickable="Boolean(game.canHumanPlay)"
-                  @select="game.toggleSelect(card.id)"
-                />
-              </TransitionGroup>
-            </div>
-          </div>
-        </v-card>
-      </v-col>
-    </v-row>
+    <h3 class="mb-2">手牌</h3>
+    <HandArea :cards="run.hand" :selected-ids="run.selectedCardIds" @toggle="toggle" />
+
+    <ShopPanel
+      v-if="run.gamePhase === 'shop'"
+      class="mt-6"
+      :offers="run.shopOffers"
+      @reroll="reroll"
+      @leave="leaveShop"
+      @buy="buy"
+    />
+
+    <v-alert v-if="run.gamePhase === 'game-over'" type="error" class="mt-6">本局失败，分数未达标。</v-alert>
+    <v-alert v-if="run.gamePhase === 'victory'" type="success" class="mt-6">胜利！你完成了演示 Run。</v-alert>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
-import { useGameStore } from '@/store/gameStore';
-import PlayerInfo from '@/components/player/PlayerInfo.vue';
-import PlayArea from '@/components/table/PlayArea.vue';
-import ActionPanel from '@/components/game/ActionPanel.vue';
-import PlayingCard from '@/components/cards/PlayingCard.vue';
-import { getAiPlay } from '@/core/aiPlayer';
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
+import HandArea from '@/components/cards/HandArea.vue';
+import JokerSlots from '@/components/jokers/JokerSlots.vue';
+import ScoreHud from '@/components/hud/ScoreHud.vue';
+import ShopPanel from '@/components/table/ShopPanel.vue';
+import { useRunStore } from '@/store/runStore';
 
-const game = useGameStore();
+const store = useRunStore();
+const { state, currentBlind, targetScore } = storeToRefs(store);
 
-onMounted(() => {
-  game.restart(3);
-});
+const run = state;
+const target = targetScore;
 
-const humanCards = computed(() => game.humanPlayer?.hand ?? []);
-const selectedIds = computed(() => game.selectedCardIds);
+const canPlay = computed(
+  () =>
+    run.value.gamePhase === 'blind-playing' &&
+    run.value.handsRemaining > 0 &&
+    run.value.selectedCardIds.length >= 1 &&
+    run.value.selectedCardIds.length <= 5,
+);
+const canDiscard = computed(
+  () => run.value.gamePhase === 'blind-playing' && run.value.discardsRemaining > 0 && run.value.selectedCardIds.length > 0,
+);
 
-async function onPlay(): Promise<void> {
-  await game.playSelectedCards();
-}
-
-async function onPass(): Promise<void> {
-  await game.passTurn();
-}
-
-function onRestart(): void {
-  game.restart(3);
-}
-
-function onHint(): void {
-  const player = game.humanPlayer;
-  if (!player) {
-    return;
-  }
-  const suggested = getAiPlay(player.hand, game.lastPlayedHand?.hand ?? null);
-  if (!suggested) {
-    return;
-  }
-
-  const ids = new Set(suggested.map((card) => card.id));
-  for (const card of player.hand) {
-    if (ids.has(card.id)) {
-      game.toggleSelect(card.id);
-    }
-  }
-}
+const toggle = (cardId: string): void => store.toggleCardSelection(cardId);
+const play = (): void => store.play();
+const discard = (): void => store.discard();
+const sort = (by: 'rank' | 'suit'): void => store.sortHand(by);
+const reset = (): void => store.resetRun();
+const reroll = (): void => store.rerollShop();
+const buy = (id: string): void => store.buyJoker(id);
+const leaveShop = (): void => store.leaveShop();
 </script>
 
 <style scoped>
-.game-table {
-  max-width: 1400px;
-}
-
-.hand-scroll {
-  overflow-x: auto;
-  padding-bottom: 8px;
-}
-
-.hand-row {
-  display: flex;
-  gap: 8px;
-  min-width: max-content;
-}
-
-.hand-pop-enter-active,
-.hand-pop-leave-active {
-  transition: all 0.2s ease;
-}
-
-.hand-pop-enter-from,
-.hand-pop-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-@media (max-width: 768px) {
-  .game-table {
-    padding-inline: 8px;
-  }
+.table-root {
+  min-height: 100vh;
+  background: radial-gradient(circle at center, #2c3e50 0%, #000000 100%);
+  color: #fff;
 }
 </style>
