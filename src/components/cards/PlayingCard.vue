@@ -64,13 +64,11 @@ const suitTone = computed(() =>
   align-items: flex-start;
   gap: 2px;
 }
-
 .rank {
   font-weight: 900;
   font-size: 1.4rem;
   line-height: 1;
 }
-
 .suit {
   font-size: 1.1rem;
   line-height: 1;
