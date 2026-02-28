@@ -1,0 +1,27 @@
+{
+  "name": "web-joker-card-game",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "pinia": "^2.1.7",
+    "vue": "^3.5.13",
+    "vuetify": "^3.7.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "sass": "^1.85.1",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.0",
+    "vite-plugin-vuetify": "^2.1.1",
+    "vitest": "^3.0.8",
+    "vue-tsc": "^2.2.8"
+  }
+}
