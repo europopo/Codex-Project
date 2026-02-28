@@ -1,5 +1,7 @@
 <template>
   <v-container fluid class="pa-4 table-root">
+    <JokerSlots :jokers="run.jokers" />
+
     <ScoreHud
       :ante="run.ante"
       :blind-name="currentBlind.name"
@@ -23,12 +25,6 @@
     <h3 class="mb-2">手牌</h3>
     <HandArea :cards="run.hand" :selected-ids="run.selectedCardIds" @toggle="toggle" />
 
-    <h3 class="mt-6 mb-2">Jokers</h3>
-    <div class="d-flex ga-2 overflow-x-auto">
-      <JokerCard v-for="joker in run.jokers" :key="joker.config.id + JSON.stringify(joker.state)" :joker="joker" />
-      <div v-if="run.jokers.length === 0" class="text-medium-emphasis">暂无 Joker</div>
-    </div>
-
     <ShopPanel
       v-if="run.gamePhase === 'shop'"
       class="mt-6"
@@ -47,7 +43,7 @@
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import HandArea from '@/components/cards/HandArea.vue';
-import JokerCard from '@/components/jokers/JokerCard.vue';
+import JokerSlots from '@/components/jokers/JokerSlots.vue';
 import ScoreHud from '@/components/hud/ScoreHud.vue';
 import ShopPanel from '@/components/table/ShopPanel.vue';
 import { useRunStore } from '@/store/runStore';
@@ -82,7 +78,7 @@ const leaveShop = (): void => store.leaveShop();
 <style scoped>
 .table-root {
   min-height: 100vh;
-  background: radial-gradient(circle at top, #263238, #111);
+  background: radial-gradient(circle at center, #2c3e50 0%, #000000 100%);
   color: #fff;
 }
 </style>
