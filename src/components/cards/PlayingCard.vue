@@ -1,12 +1,12 @@
 <template>
-  <v-card
-    class="playing-card"
-    :class="{ selected }"
-    color="blue-grey-darken-4"
-    @click="$emit('toggle')"
-  >
-    <div class="rank">{{ rankLabel }}</div>
-    <div class="suit" :class="card.suit">{{ suitLabel }}</div>
+  <v-card class="playing-card" :class="[{ selected }, suitTone]" @click="$emit('toggle')">
+    <div class="card-top">
+      <div class="rank">{{ rankLabel }}</div>
+      <div class="suit">{{ suitLabel }}</div>
+    </div>
+    <div class="card-bottom">
+      <div class="rank">{{ rankLabel }}</div>
+    </div>
   </v-card>
 </template>
 
@@ -34,35 +34,62 @@ const suitLabel = computed(() => {
   };
   return map[props.card.suit];
 });
+
+const suitTone = computed(() =>
+  props.card.suit === 'hearts' || props.card.suit === 'diamonds' ? 'red-suit' : 'black-suit',
+);
 </script>
 
 <style scoped>
 .playing-card {
-  width: 86px;
-  min-width: 86px;
-  height: 120px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  width: 100px;
+  min-width: 100px;
+  height: 140px;
+  border-radius: 8px;
+  background: #ffffff;
+  border: 2px solid #dddddd;
+  color: #212121;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  user-select: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
 }
-.selected {
-  transform: translateY(-10px);
-  border-color: #90caf9;
+
+.card-top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 .rank {
-  font-weight: 700;
-  font-size: 1.1rem;
+  font-weight: 900;
+  font-size: 1.4rem;
+  line-height: 1;
 }
 .suit {
-  margin-top: 2rem;
-  font-size: 1.4rem;
+  font-size: 1.1rem;
+  line-height: 1;
 }
-.hearts,
-.diamonds {
-  color: #ef5350;
+
+.card-bottom {
+  align-self: flex-end;
+  transform: rotate(180deg);
 }
-.clubs,
-.spades {
-  color: #fff;
+
+.selected {
+  transform: translateY(-30px) scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.95);
+  border-color: #ffeb3b;
+}
+
+.red-suit {
+  color: #e53935;
+}
+
+.black-suit {
+  color: #212121;
 }
 </style>

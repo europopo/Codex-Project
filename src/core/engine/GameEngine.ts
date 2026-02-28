@@ -13,6 +13,10 @@ export class GameEngine {
   private readonly jokerEngine = new JokerEngine();
   private readonly scoringEngine = new ScoringEngine(this.jokerEngine);
 
+  private sortByRank(cards: Card[]): Card[] {
+    return [...cards].sort((a, b) => a.rank - b.rank || a.suit.localeCompare(b.suit));
+  }
+
   initRun(): RunState {
     const deck = shuffleDeck(createStandardDeck());
     const draw = drawCards(deck, [], HAND_SIZE);
@@ -20,7 +24,7 @@ export class GameEngine {
     return {
       deck: draw.nextDeck,
       discardPile: draw.nextDiscard,
-      hand: draw.drawn,
+      hand: this.sortByRank(draw.drawn),
       selectedCardIds: [],
       playedCards: [],
       jokers: [],
@@ -67,7 +71,7 @@ export class GameEngine {
     const draw = drawCards(state.deck, [...state.discardPile, ...discarded], selected.size);
     return {
       ...state,
-      hand: [...hand, ...draw.drawn],
+      hand: this.sortByRank([...hand, ...draw.drawn]),
       deck: draw.nextDeck,
       discardPile: draw.nextDiscard,
       discardsRemaining: state.discardsRemaining - 1,
@@ -115,7 +119,7 @@ export class GameEngine {
     let next: RunState = {
       ...state,
       jokers: calc.jokers,
-      hand: [...unplayed, ...draw.drawn],
+      hand: this.sortByRank([...unplayed, ...draw.drawn]),
       deck: draw.nextDeck,
       discardPile: draw.nextDiscard,
       selectedCardIds: [],

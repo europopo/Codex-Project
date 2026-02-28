@@ -2,6 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { GameEngine } from './GameEngine';
 
 describe('GameEngine', () => {
+  it('initial hand is sorted by rank by default', () => {
+    const engine = new GameEngine();
+    const state = engine.initRun();
+
+    const ranks = state.hand.map((card) => card.rank);
+    const sorted = [...ranks].sort((a, b) => a - b);
+    expect(ranks).toEqual(sorted);
+  });
+
   it('plays exactly 5 cards when selected and in blind-playing phase', () => {
     const engine = new GameEngine();
     const state = engine.initRun();

@@ -1,12 +1,12 @@
 <template>
-  <div class="hand-scroll">
-    <PlayingCard
-      v-for="card in cards"
-      :key="card.id"
-      :card="card"
-      :selected="selectedIds.includes(card.id)"
-      @toggle="$emit('toggle', card.id)"
-    />
+  <div class="hand-area">
+    <div v-for="card in cards" :key="card.id" class="card-wrapper">
+      <PlayingCard
+        :card="card"
+        :selected="selectedIds.includes(card.id)"
+        @toggle="$emit('toggle', card.id)"
+      />
+    </div>
   </div>
 </template>
 
@@ -19,10 +19,25 @@ defineEmits<{ toggle: [id: string] }>();
 </script>
 
 <style scoped>
-.hand-scroll {
+.hand-area {
   display: flex;
-  gap: 10px;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 20px 12px 28px;
   overflow-x: auto;
-  padding-bottom: 8px;
+}
+
+.card-wrapper {
+  margin-left: -34px;
+}
+
+.card-wrapper:first-child {
+  margin-left: 0;
+}
+
+@media (max-width: 960px) {
+  .card-wrapper {
+    margin-left: -20px;
+  }
 }
 </style>
