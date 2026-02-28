@@ -14,4 +14,9 @@ describe('PokerEvaluator', () => {
     const hand = [c(8, 'clubs'), c(8, 'spades'), c(2, 'hearts'), c(2, 'diamonds'), c(13, 'hearts')];
     expect(evaluateHand(hand).handType).toBe('Two Pair');
   });
+
+  it('支持 1~5 张出牌评估（3 张可识别 Pair）', () => {
+    const hand = [c(9, 'clubs'), c(9, 'hearts'), c(4, 'spades')];
+    expect(evaluateHand(hand).handType).toBe('Pair');
+  });
 });

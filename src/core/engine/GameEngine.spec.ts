@@ -14,6 +14,18 @@ describe('GameEngine', () => {
     expect(next.selectedCardIds).toHaveLength(0);
   });
 
+  it('allows playing 1 to 5 selected cards', () => {
+    const engine = new GameEngine();
+    const state = engine.initRun();
+    const selected = state.hand.slice(0, 3).map((card) => card.id);
+
+    const next = engine.playSelected({ ...state, selectedCardIds: selected });
+
+    expect(next.handsRemaining).toBe(state.handsRemaining - 1);
+    expect(next.playedCards).toHaveLength(3);
+    expect(next.hand).toHaveLength(state.hand.length);
+  });
+
   it('does not play cards outside blind-playing phase', () => {
     const engine = new GameEngine();
     const state = engine.initRun();

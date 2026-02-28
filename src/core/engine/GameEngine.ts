@@ -79,7 +79,7 @@ export class GameEngine {
     if (state.gamePhase !== 'blind-playing' || state.handsRemaining <= 0) return state;
     const selected = new Set(state.selectedCardIds);
     const playedCards = state.hand.filter((card) => selected.has(card.id));
-    if (playedCards.length !== 5) {
+    if (playedCards.length < 1 || playedCards.length > 5) {
       return state;
     }
     const evaluation = evaluateHand(playedCards);
@@ -110,7 +110,7 @@ export class GameEngine {
     );
 
     const unplayed = state.hand.filter((card) => !selected.has(card.id));
-    const draw = drawCards(state.deck, [...state.discardPile, ...playedCards], 5);
+    const draw = drawCards(state.deck, [...state.discardPile, ...playedCards], playedCards.length);
 
     let next: RunState = {
       ...state,

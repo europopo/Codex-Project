@@ -32,10 +32,11 @@ const isStraight = (ranks: number[]): boolean => {
 };
 
 const classify = (cards: Card[]): HandType => {
+  const cardCount = cards.length;
   const ranks = cards.map((card) => card.rank);
   const counts = [...countByRank(cards).values()].sort((a, b) => b - a);
-  const flush = isFlush(cards);
-  const straight = isStraight(ranks);
+  const flush = cardCount === 5 && isFlush(cards);
+  const straight = cardCount === 5 && isStraight(ranks);
 
   if (straight && flush) return 'Straight Flush';
   if (counts[0] === 4) return 'Four of a Kind';
@@ -49,8 +50,8 @@ const classify = (cards: Card[]): HandType => {
 };
 
 export const evaluateHand = (cards: Card[]): HandEvaluation => {
-  if (cards.length !== 5) {
-    throw new Error('PokerEvaluator requires exactly 5 cards');
+  if (cards.length < 1 || cards.length > 5) {
+    throw new Error('PokerEvaluator requires 1 to 5 cards');
   }
 
   const handType = classify(cards);

@@ -16,7 +16,7 @@
       <v-btn color="teal" @click="sort('rank')">按点数排序</v-btn>
       <v-btn color="teal-darken-1" @click="sort('suit')">按花色排序</v-btn>
       <v-btn color="orange" :disabled="!canDiscard" @click="discard">弃牌</v-btn>
-      <v-btn color="pink" :disabled="!canPlay" @click="play">出牌（5张）</v-btn>
+      <v-btn color="pink" :disabled="!canPlay" @click="play">出牌（1~5张）</v-btn>
       <v-btn color="red" variant="outlined" @click="reset">重开</v-btn>
     </div>
 
@@ -59,7 +59,11 @@ const run = state;
 const target = targetScore;
 
 const canPlay = computed(
-  () => run.value.gamePhase === 'blind-playing' && run.value.handsRemaining > 0 && run.value.selectedCardIds.length === 5,
+  () =>
+    run.value.gamePhase === 'blind-playing' &&
+    run.value.handsRemaining > 0 &&
+    run.value.selectedCardIds.length >= 1 &&
+    run.value.selectedCardIds.length <= 5,
 );
 const canDiscard = computed(
   () => run.value.gamePhase === 'blind-playing' && run.value.discardsRemaining > 0 && run.value.selectedCardIds.length > 0,
