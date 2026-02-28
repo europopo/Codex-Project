@@ -76,9 +76,12 @@ export class GameEngine {
   }
 
   playSelected(state: RunState): RunState {
-    if (state.selectedCardIds.length !== 5 || state.handsRemaining <= 0) return state;
+    if (state.gamePhase !== 'blind-playing' || state.handsRemaining <= 0) return state;
     const selected = new Set(state.selectedCardIds);
     const playedCards = state.hand.filter((card) => selected.has(card.id));
+    if (playedCards.length !== 5) {
+      return state;
+    }
     const evaluation = evaluateHand(playedCards);
     const blind = this.currentBlind(state);
 
